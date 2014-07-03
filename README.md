@@ -1,4 +1,3 @@
-ppla-haskell
-============
+[ai2.uni-bayreuth.de/de/teaching/ss2014/ppla](http://www.ai2.uni-bayreuth.de/de/teaching/ss2014/ppla)
 
-A brief introduction to functional programming in Haskell 
+[E-Learning Universität Bayreuth](https://elearning.uni-bayreuth.de/course/view.php?id=9373)
