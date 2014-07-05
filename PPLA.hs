@@ -1,6 +1,6 @@
 module PPLA where
 
-import Prelude hiding (head, last, tail, init, (!!), length, reverse, map, filter)
+import Prelude hiding (head, last, tail, init, (!!), length, reverse, map, filter, lookup)
 import Data.Char
 import Test.QuickCheck
 
@@ -268,3 +268,102 @@ runQuickCheck = do
 
     putStrLn "Testing prop_sorted"
     quickCheck (prop_sorted :: [Float] -> Bool)
+
+----- Data types
+
+-- String is a type synonym for [Char]
+-- type String = [Char]
+
+type Point = (Double, Double)
+
+distance :: Point -> Point -> Double
+distance (x1, y1) (x2, y2) = sqrt ((x1-x2)^2 + (y1-y2)^2)
+
+distanceFromOrigin :: Point -> Double
+distanceFromOrigin = distance (0, 0)
+
+type SymbolTable = [(String, Double)]
+
+numbers :: SymbolTable
+numbers = [("pi", pi), ("e", exp 1), ("root 2", sqrt 2)]
+
+lookup :: String -> SymbolTable -> Maybe Double
+lookup _ [] = Nothing
+lookup s ((k, v):xs)
+    | s == k = Just v
+    | otherwise = lookup s xs
+-- lookup "pi" numbers
+-- lookup "root 2" numbers
+-- lookup "root 3" numbers
+
+data Answer = Yes | No deriving (Show, Read)
+
+testAnswer = do
+    putStr "Quit? "
+    a <- getLine
+    case reads a :: [(Answer, String)] of
+        [(Yes, _)] -> return ()
+        [(No,  _)] -> putStrLn "Try again" >> testAnswer
+        _          -> putStrLn "Invalid input" >> testAnswer
+
+-- data Movie = Movie String Int Float deriving (Show, Eq, Ord)
+data Movie = Movie
+    { movieTitle :: String,
+      movieYear  :: Int,
+      movieScore :: Float
+    } deriving (Show, Eq, Ord)
+
+imdbTop5 :: [Movie]
+imdbTop5 =
+    [ Movie
+      { movieTitle = "The Shawshank Redemption",
+        movieYear  = 1994,
+        movieScore = 9.2
+      },
+      Movie
+      { movieTitle = "The Godfather",
+        movieYear  = 1972,
+        movieScore = 9.2
+      },
+      Movie
+      { movieTitle = "The Godfather: Part II",
+        movieYear  = 1974,
+        movieScore = 9.0
+      },
+      Movie
+      { movieTitle = "The Dark Knight",
+        movieYear  = 2008,
+        movieScore = 8.9
+      },
+      Movie
+      { movieTitle = "Pulp Fiction",
+        movieYear  = 1994,
+        movieScore = 8.9
+      }
+    ]
+-- movieScore (head imdbTop5)
+-- map movieTitle imdbTop5
+-- qsort imdbTop5
+
+----- Recursive data types
+
+data AExpr a = Literal a
+             | Add (AExpr a) (AExpr a)
+             | Sub (AExpr a) (AExpr a)
+             deriving Show
+
+eval :: AExpr Double -> Double
+eval (Literal a) = a
+eval (Add a b) = eval a + eval b
+eval (Sub a b) = eval a - eval b
+-- eval $ Add (Literal 1) (Sub (Literal 3) (Literal 2))
+-- eval $ Literal 1 `Add` (Literal 3 `Sub` Literal 2)
+
+data List a = Null | Cons a (List a) deriving Show
+
+infixr 5 `Cons` -- right-associative, precedence level 5 (same as (:))
+
+append :: List a -> List a -> List a
+Null      `append` ys = ys
+Cons x xs `append` ys = x `Cons` (xs `append` ys)
+-- 1 `Cons` Null `append` (2 `Cons` 3 `Cons` Null)
