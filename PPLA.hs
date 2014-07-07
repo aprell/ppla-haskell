@@ -132,6 +132,11 @@ twice f = f . f
 -- twice (+2) 4 == ((+2) . (+2)) 4 == ((+2) ((+2) 4)) == 8
 -- twice reverse "Haskell"
 
+times n f | n > 0 = f . times (n-1) f
+times _ _ = id
+-- 2 `times` (+2) $ 4
+-- 5 `times` (++ [42]) $ []
+
 ----- List comprehensions and infinite lists
 
 squares :: Int -> [Int]
