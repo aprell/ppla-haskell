@@ -209,6 +209,15 @@ reverse'' :: [a] -> [a]
 reverse'' xs = reduce f [] xs
     where f = \a x -> x:a
 
+----- foldl vs foldr
+
+testFold = do
+    let test fold = fold (\x y -> concat ["(",x,"+",y,")"]) "0" (map show [1..10])
+    putStrLn "foldl (+) 0 [1..10]"
+    putStrLn $ "  " ++ test foldl -- "((((((((((0+1)+2)+3)+4)+5)+6)+7)+8)+9)+10)"
+    putStrLn "foldr (+) 0 [1..10]"
+    putStrLn $ "  " ++ test foldr -- "(1+(2+(3+(4+(5+(6+(7+(8+(9+(10+0))))))))))"
+
 ----- Lazy evaluation
 
 {- Two simple examples demonstrating Haskell's laziness
