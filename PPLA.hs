@@ -171,6 +171,19 @@ prop_sorted = sorted . qsort
 
 -- quickCheck (prop_sorted :: [Float] -> Bool)
 
+qsortBy :: (a -> a -> Ordering) -> [a] -> [a]
+qsortBy _ [] = []
+qsortBy cmp (x:xs) = qsortBy cmp lhs ++ [x] ++ qsortBy cmp rhs
+    where lhs = [a | a <- xs, a `cmp` x == LT || a `cmp` x == EQ]
+          rhs = [a | a <- xs, a `cmp` x == GT]
+-- qsortBy compare [3,1,4,1,5,9,2,6,5]
+-- qsortBy (flip compare) [3,1,4,1,5,9,2,6,5]
+
+prop_qsortBy :: Ord a => [a] -> Bool
+prop_qsortBy xs = (reverse . qsortBy compare) xs == qsortBy (flip compare) xs
+
+-- quickCheck (prop_qsortBy :: [Float] -> Bool)
+
 ----- Higher-order functions
 
 map :: (a -> b) -> [a] -> [b]
@@ -282,6 +295,9 @@ runQuickCheck = do
 
     putStrLn "Testing prop_sorted"
     quickCheck (prop_sorted :: [Float] -> Bool)
+
+    putStrLn "Testing prop_qsortBy"
+    quickCheck (prop_qsortBy :: [Float] -> Bool)
 
 ----- Data types
 
