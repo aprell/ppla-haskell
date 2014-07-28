@@ -57,12 +57,11 @@ length :: Num a => [t] -> a
 length [] = 0
 length (x:xs) = 1 + length xs
 
+-- | prop> length xs == length' xs
 length' :: Num a => [t] -> a
 length' xs = go 0 xs
     where go acc [] = acc
           go acc (x:xs) = go (acc+1) xs
-
--- quickCheck (\xs -> length xs == length' xs)
 
 -- makePair x y = (x, y)
 -- makePair x y = (,) x y
@@ -75,18 +74,17 @@ reverse :: [a] -> [a]
 reverse [] = []
 reverse (x:xs) = reverse xs ++ [x]
 
+-- Type of property determines which test data is generated
+
+-- | prop> reverse xs == reverse' (xs :: [Int])
 reverse' :: [a] -> [a]
 reverse' xs = go [] xs
     where go acc [] = acc
           go acc (x:xs) = go (x:acc) xs
 
--- Type of property determines which test data is generated
--- quickCheck ((\xs -> reverse xs == reverse' xs) :: [Int] -> Bool)
-
+-- | prop> prop_reverse :: [Int] -> [Int] -> Bool
 prop_reverse :: Eq a => [a] -> [a] -> Bool
 prop_reverse xs ys = reverse (xs ++ ys) == reverse ys ++ reverse xs
-
--- quickCheck (prop_reverse :: [Int] -> [Int] -> Bool)
 
 {- Performance difference between appending and prepending to a list
 ghci> :set +s
@@ -128,14 +126,27 @@ isOdd = not . isEven
 -- ghci> :t (.)
 -- (.) :: (b -> c) -> (a -> b) -> a -> c
 
+-- |
+--
+-- >>> twice (+2) 4
+-- 8
+--
+-- >>> twice reverse "Haskell"
+-- "Haskell"
+--
 twice f = f . f
--- twice (+2) 4 == ((+2) . (+2)) 4 == ((+2) ((+2) 4)) == 8
--- twice reverse "Haskell"
+-- ^ twice (+2) 4 == ((+2) . (+2)) 4 == ((+2) ((+2) 4)) == 8
 
+-- |
+--
+-- >>> 2 `times` (+2) $ 4
+-- 8
+--
+-- >>> 5 `times` (++ [42]) $ []
+-- [42,42,42,42,42]
+--
 times n f | n > 0 = f . times (n-1) f
 times _ _ = id
--- 2 `times` (+2) $ 4
--- 5 `times` (++ [42]) $ []
 
 ----- List comprehensions and infinite lists
 
@@ -166,57 +177,98 @@ sorted []  = True
 sorted [x] = True
 sorted (x:y:xs) = x <= y && sorted (y:xs)
 
+-- | prop> prop_sorted :: [Float] -> Bool
 prop_sorted :: Ord a => [a] -> Bool
 prop_sorted = sorted . qsort
 
--- quickCheck (prop_sorted :: [Float] -> Bool)
-
+-- |
+--
+-- >>> qsortBy compare [3,1,4,1,5,9,2,6,5]
+-- [1,1,2,3,4,5,5,6,9]
+--
+-- >>> qsortBy (flip compare) [3,1,4,1,5,9,2,6,5]
+-- [9,6,5,5,4,3,2,1,1]
+--
 qsortBy :: (a -> a -> Ordering) -> [a] -> [a]
 qsortBy _ [] = []
 qsortBy cmp (x:xs) = qsortBy cmp lhs ++ [x] ++ qsortBy cmp rhs
     where lhs = [a | a <- xs, a `cmp` x == LT || a `cmp` x == EQ]
           rhs = [a | a <- xs, a `cmp` x == GT]
--- qsortBy compare [3,1,4,1,5,9,2,6,5]
--- qsortBy (flip compare) [3,1,4,1,5,9,2,6,5]
 
+-- | prop> prop_qsortBy :: [Float] -> Bool
 prop_qsortBy :: Ord a => [a] -> Bool
 prop_qsortBy xs = (reverse . qsortBy compare) xs == qsortBy (flip compare) xs
 
--- quickCheck (prop_qsortBy :: [Float] -> Bool)
-
 ----- Higher-order functions
 
+-- | Map
+--
+-- >>> map (*2) [1..10]
+-- [2,4,6,8,10,12,14,16,18,20]
+--
+-- >>> map isEven [1..10]
+-- [False,True,False,True,False,True,False,True,False,True]
+--
+-- >>> map ord "Haskell"
+-- [72,97,115,107,101,108,108]
+--
+-- >>> map (++ "!") ["foo", "bar", "baz"]
+-- ["foo!","bar!","baz!"]
+--
 map :: (a -> b) -> [a] -> [b]
 map _ [] = []
 map f (x:xs) = f x : map f xs
--- map (*2) [1..10]
--- map isEven [1..10]
--- map ord "Haskell"
--- map (++ "!") ["foo", "bar", "baz"]
 
+-- | Filter
+--
+-- >>> filter (< 5) [1..10]
+-- [1,2,3,4]
+--
+-- >>> filter isEven [1..10]
+-- [2,4,6,8,10]
+--
+-- >>> filter palindrome ["racecar", "Otto", "LOL"]
+-- ["racecar","LOL"]
+--
 filter :: (a -> Bool) -> [a] -> [a]
 filter _ [] = []
 filter p (x:xs) = if p x then x : filter p xs else filter p xs
--- filter (< 5) [1..10]
--- filter isEven [1..10]
--- filter palindrome ["racecar", "Otto", "LOL"]
 
+-- | Reduce
+--
+-- >>> reduce (+) 0 [1..10]
+-- 55
+--
+-- >>> reduce (*) 1 [1..10]
+-- 3628800
+--
+-- >>> reduce min 3 [3,1,4,1,5,9,2,6]
+-- 1
+--
+-- >>> reduce max 3 [3,1,4,1,5,9,2,6]
+-- 9
+--
 reduce :: (a -> b -> a) -> a -> [b] -> a
 reduce _ acc [] = acc
 reduce f acc (x:xs) = reduce f (f acc x) xs
--- reduce (+) 0 [1..10]
--- reduce (*) 1 [1..10]
--- reduce min 3 [3,1,4,1,5,9,2,6]
--- reduce max 3 [3,1,4,1,5,9,2,6]
 
+-- | Reduce1
+--
+-- >>> reduce1 (+) [1..10]
+-- 55
+--
+-- >>> reduce1 (*) [1..10]
+-- 3628800
+--
+-- >>> reduce1 min [3,1,4,1,5,9,2,6]
+-- 1
+--
+-- >>> reduce1 max [3,1,4,1,5,9,2,6]
+-- 9
+--
 reduce1 :: (a -> a -> a) -> [a] -> a
 reduce1 f (x:xs) = reduce f x xs
 reduce1 _ [] = error "reduce1 must be applied to non-empty lists"
--- reduce1 (+) [1..10]
--- reduce1 (*) [1..10]
--- reduce1 min [3,1,4,1,5,9,2,6]
--- reduce1 max [3,1,4,1,5,9,2,6]
--- reduce1 undefined []
 
 reverse'' :: [a] -> [a]
 reverse'' xs = reduce f [] xs
@@ -317,14 +369,22 @@ type SymbolTable = [(String, Double)]
 numbers :: SymbolTable
 numbers = [("pi", pi), ("e", exp 1), ("root 2", sqrt 2)]
 
+-- |
+--
+-- >>> lookup "pi" numbers
+-- Just 3.141592653589793
+--
+-- >>> lookup "root 2" numbers
+-- Just 1.4142135623730951
+--
+-- >>> lookup "root 3" numbers
+-- Nothing
+--
 lookup :: String -> SymbolTable -> Maybe Double
 lookup _ [] = Nothing
 lookup s ((k, v):xs)
     | s == k = Just v
     | otherwise = lookup s xs
--- lookup "pi" numbers
--- lookup "root 2" numbers
--- lookup "root 3" numbers
 
 data Answer = Yes | No deriving (Show, Read)
 
@@ -382,18 +442,28 @@ data AExpr a = Literal a
              | Sub (AExpr a) (AExpr a)
              deriving Show
 
+-- |
+--
+-- >>> eval $ Add (Literal 1) (Sub (Literal 3) (Literal 2))
+-- 2.0
+--
+-- >>> eval $ Literal 1 `Add` (Literal 3 `Sub` Literal 2)
+-- 2.0
+--
 eval :: AExpr Double -> Double
 eval (Literal a) = a
 eval (Add a b) = eval a + eval b
 eval (Sub a b) = eval a - eval b
--- eval $ Add (Literal 1) (Sub (Literal 3) (Literal 2))
--- eval $ Literal 1 `Add` (Literal 3 `Sub` Literal 2)
 
 data List a = Null | Cons a (List a) deriving Show
 
 infixr 5 `Cons` -- right-associative, precedence level 5 (same as (:))
 
+-- |
+--
+-- >>> 1 `Cons` Null `append` (2 `Cons` 3 `Cons` Null)
+-- Cons 1 (Cons 2 (Cons 3 Null))
+--
 append :: List a -> List a -> List a
 Null      `append` ys = ys
 Cons x xs `append` ys = x `Cons` (xs `append` ys)
--- 1 `Cons` Null `append` (2 `Cons` 3 `Cons` Null)
