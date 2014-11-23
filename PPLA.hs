@@ -24,7 +24,7 @@ testFact = do
     putStr "factorial "
     f <- readLn
     case safeFact f of
-        Just n  -> putStrLn (show n) >> testFact
+        Just n  -> print n >> testFact
         Nothing -> putStrLn "Undefined"
 
 ----- Pattern matching
@@ -34,7 +34,7 @@ head (x:xs) = x
 head _ = error "empty list"
 
 last :: [a] -> a
-last (x:[]) = x
+last [x] = x
 last (x:xs) = last xs
 last _ = error "empty list"
 
@@ -43,7 +43,7 @@ tail (x:xs) = xs
 tail _ = error "empty list"
 
 init :: [a] -> [a]
-init (x:[]) = []
+init [x] = []
 init (x:xs) = x : init xs
 init _ = error "empty list"
 
@@ -272,7 +272,7 @@ reduce1 _ [] = error "reduce1 must be applied to non-empty lists"
 
 reverse'' :: [a] -> [a]
 reverse'' xs = reduce f [] xs
-    where f = \a x -> x:a
+    where f = flip (:)
 
 ----- foldl vs foldr
 
