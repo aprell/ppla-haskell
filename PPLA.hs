@@ -11,11 +11,27 @@ double x = x + x
 
 ----- Recursion
 
+-- |
+--
+-- >>> fact 5
+-- 120
+--
+-- >>> fact (-1)
+-- *** Exception: Factorial undefined for negative values
+--
 fact :: Integer -> Integer
 fact 0 = 1
 fact n | n > 0 = n * fact (n-1)
        | otherwise = error "Factorial undefined for negative values"
 
+-- |
+--
+-- >>> safeFact 5
+-- Just 120
+--
+-- >>> safeFact (-1)
+-- Nothing
+--
 safeFact :: Integer -> Maybe Integer
 safeFact n | n < 0 = Nothing
            | otherwise = Just (fact n)
