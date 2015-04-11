@@ -1,8 +1,9 @@
 module PPLA where
 
-import Prelude hiding (head, last, tail, init, (!!), length, reverse, map, filter, lookup)
-import Data.Char
-import Test.QuickCheck
+import           Data.Char
+import           Prelude         hiding (filter, head, init, last, length,
+                                  lookup, map, reverse, tail, (!!))
+import           Test.QuickCheck
 
 ----- Let's get started
 
