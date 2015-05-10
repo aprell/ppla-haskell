@@ -1,8 +1,8 @@
 module PPLA where
 
 import           Data.Char
-import           Prelude         hiding (filter, head, init, last, length,
-                                  lookup, map, reverse, tail, (!!))
+import           Prelude         hiding (drop, filter, head, init, last, length,
+                                  lookup, map, reverse, tail, take, (!!))
 import           Test.QuickCheck
 
 ----- Let's get started
@@ -79,6 +79,16 @@ length' :: Num a => [t] -> a
 length' xs = go 0 xs
     where go acc [] = acc
           go acc (x:xs) = go (acc+1) xs
+
+take :: Int -> [a] -> [a]
+take n _ | n <= 0 = []
+take _ [] = []
+take n (x:xs) = x : take (n-1) xs
+
+drop :: Int -> [a] -> [a]
+drop n xs | n <= 0 = xs
+drop _ [] = []
+drop n (x:xs) = drop (n-1) xs
 
 -- makePair x y = (x, y)
 -- makePair x y = (,) x y
