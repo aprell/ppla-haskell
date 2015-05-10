@@ -310,6 +310,20 @@ testFold = do
     putStrLn "foldr (+) 0 [1..10]"
     putStrLn $ "  " ++ test foldr -- "(1+(2+(3+(4+(5+(6+(7+(8+(9+(10+0))))))))))"
 
+----- Pipelining
+
+-- |
+--
+-- >>> [1..10] |> filter isEven |> map (^2)
+-- [4,16,36,64,100]
+--
+-- >>> "Haskell" |> map ord |> sum
+-- 708
+--
+(|>) :: a -> (a -> b) -> b
+x |> f = f x
+-- ^ x |> f |> g == g (f x) == (g . f) x
+
 ----- Lazy evaluation
 
 {- Two simple examples demonstrating Haskell's laziness
